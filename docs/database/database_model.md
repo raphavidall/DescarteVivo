@@ -86,4 +86,4 @@ Abaixo, um resumo dos principais relacionamentos entre as tabelas:
 - `usuarios` **(1:N)** `empresas`: Uma empresa tem um usuário responsável.
 - `empresas` **(1:N)** `itens_da_loja`: Uma empresa pode cadastrar vários itens.
 
-![Diagrama ER](/Users/raphavidall/Developer/Unifor/DescarteVivo/docs/database)
+![Diagrama ER](/Users/raphavidall/Developer/Unifor/DescarteVivo/docs/database/docs/database/dataModelDescarteVivo.png)
