@@ -1,0 +1,82 @@
+Table usuarios {
+  id integer [pk]
+  nome_completo varchar
+  email varchar [unique]
+  senha_hash varchar
+  saldo_moedas numeric [default: 0.00]
+  data_cadastro timestamp
+  endereco jsonb [note: 'Endereço completo em formato JSON']
+}
+
+Table papeis_de_usuario {
+  id integer [pk]
+  id_usuario integer
+  papel varchar [note: 'pode ser: descarte, coleta, destino']
+}
+
+Table tipos_de_material {
+  id integer [pk]
+  nome varchar [unique]
+  valor_por_kg numeric
+}
+
+Table pacotes_de_residuos {
+  id integer [pk]
+  id_ponto_descarte integer [not null]
+  id_ponto_coleta integer
+  id_ponto_destino integer
+  status varchar [note: 'pendente_coleta, em_coleta, pendente_destino, concluido']
+  data_criacao timestamp
+  data_coleta timestamp
+  data_destino timestamp
+  localizacao jsonb [note: 'Coordenadas geográficas do pacote']
+}
+
+Table itens_do_pacote {
+  id integer [pk]
+  id_pacote integer
+  id_material integer
+  peso_kg numeric
+}
+
+Table empresas {
+  id integer [pk]
+  nome_fantasia varchar
+  cnpj varchar [unique]
+  responsavel_id integer [not null]
+}
+
+Table itens_da_loja {
+  id integer [pk]
+  id_empresa integer
+  nome_item varchar
+  descricao text
+  valor_moedas numeric
+  tipo_item varchar [note: 'produto, servico, cupom']
+  disponibilidade integer
+}
+
+Table transacoes_de_moedas {
+  id integer [pk]
+  id_usuario integer
+  valor numeric
+  tipo varchar [note: 'credito ou debito']
+  origem varchar [note: 'pacote ou loja']
+  id_referencia integer [note: 'ID do pacote ou do item da loja que originou a transação']
+  data_transacao timestamp
+}
+
+// Referências (Relacionamentos)
+
+Ref: papeis_de_usuario.id_usuario > usuarios.id
+Ref: pacotes_de_residuos.id_ponto_descarte > usuarios.id
+Ref: pacotes_de_residuos.id_ponto_coleta > usuarios.id
+Ref: pacotes_de_residuos.id_ponto_destino > usuarios.id
+
+Ref: itens_do_pacote.id_pacote > pacotes_de_residuos.id
+Ref: itens_do_pacote.id_material > tipos_de_material.id
+
+Ref: empresas.responsavel_id > usuarios.id
+Ref: itens_da_loja.id_empresa > empresas.id
+
+Ref: transacoes_de_moedas.id_usuario > usuarios.id
