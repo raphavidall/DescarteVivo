@@ -1,17 +1,16 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
 Table usuarios {
   id integer [pk]
   nome_completo varchar
   email varchar [unique]
   senha_hash varchar
+  tipo_documento varchar [note: 'CPF ou CNPJ']
+  documento varchar [unique]
   saldo_moedas numeric [default: 0.00]
   data_cadastro timestamp
   endereco jsonb [note: 'Endereço completo em formato JSON']
-}
-
-Table papeis_de_usuario {
-  id integer [pk]
-  id_usuario integer
-  papel varchar [note: 'pode ser: descarte, coleta, destino']
 }
 
 Table tipos_de_material {
@@ -25,30 +24,28 @@ Table pacotes_de_residuos {
   id_ponto_descarte integer [not null]
   id_ponto_coleta integer
   id_ponto_destino integer
-  status varchar [note: 'pendente_coleta, em_coleta, pendente_destino, concluido']
+  status varchar [note: 'disponivel, em_transporte, concluido']
+  valor_pacote_moedas numeric [note: 'Valor definido pelo Ponto de Descarte']
+  valor_coleta_moedas numeric [note: 'Valor de transporte definido pelo Ponto de Coleta, pode ser 0']
+  id_material integer [not null, note: 'Tipo de material do pacote']
+  peso_kg numeric [not null]
   data_criacao timestamp
   data_coleta timestamp
   data_destino timestamp
   localizacao jsonb [note: 'Coordenadas geográficas do pacote']
 }
 
-Table itens_do_pacote {
+Table mensagens_pacote {
   id integer [pk]
   id_pacote integer
-  id_material integer
-  peso_kg numeric
-}
-
-Table empresas {
-  id integer [pk]
-  nome_fantasia varchar
-  cnpj varchar [unique]
-  responsavel_id integer [not null]
+  id_remetente integer
+  mensagem text
+  data_envio timestamp
 }
 
 Table itens_da_loja {
   id integer [pk]
-  id_empresa integer
+  id_vendedor integer
   nome_item varchar
   descricao text
   valor_moedas numeric
@@ -58,25 +55,25 @@ Table itens_da_loja {
 
 Table transacoes_de_moedas {
   id integer [pk]
-  id_usuario integer
+  id_origem integer [note: 'ID do usuário que está pagando, ou nulo se for compra/venda na plataforma']
+  id_destino integer [note: 'ID do usuário que está recebendo']
   valor numeric
-  tipo varchar [note: 'credito ou debito']
-  origem varchar [note: 'pacote ou loja']
-  id_referencia integer [note: 'ID do pacote ou do item da loja que originou a transação']
+  tipo varchar [note: 'destinacao, coleta, compra_reais, venda_loja, aquisicao, solicitacao_coleta, compra_loja']
+  id_referencia integer [note: 'ID do pacote ou do item da loja']
   data_transacao timestamp
 }
 
-// Referências (Relacionamentos)
-
-Ref: papeis_de_usuario.id_usuario > usuarios.id
+// Relacionamentos
 Ref: pacotes_de_residuos.id_ponto_descarte > usuarios.id
 Ref: pacotes_de_residuos.id_ponto_coleta > usuarios.id
 Ref: pacotes_de_residuos.id_ponto_destino > usuarios.id
 
-Ref: itens_do_pacote.id_pacote > pacotes_de_residuos.id
-Ref: itens_do_pacote.id_material > tipos_de_material.id
+Ref: pacotes_de_residuos.id_material > tipos_de_material.id
 
-Ref: empresas.responsavel_id > usuarios.id
-Ref: itens_da_loja.id_empresa > empresas.id
+Ref: mensagens_pacote.id_pacote > pacotes_de_residuos.id
+Ref: mensagens_pacote.id_remetente > usuarios.id
 
-Ref: transacoes_de_moedas.id_usuario > usuarios.id
+Ref: itens_da_loja.id_vendedor > usuarios.id
+
+Ref: transacoes_de_moedas.id_origem > usuarios.id
+Ref: transacoes_de_moedas.id_destino > usuarios.id
